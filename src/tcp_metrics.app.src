@@ -1,0 +1,16 @@
+{application, 'tcp_metrics',
+ [{description, "Gather TCP RTT metrics"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {'tcp_metrics_app', []}},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {contributors, []},
+  {licenses, []},
+  {links, []}
+ ]}.
