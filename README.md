@@ -21,4 +21,4 @@ Usage
 
 Start the `tcp_metrics` application and call `tcp_metrics:lookup(Ip)`
 or read straight from the ETS table created; the returned value is
-either `undefined` or an integer in microseconds.
+either `undefined` or an integer in milliseconds.

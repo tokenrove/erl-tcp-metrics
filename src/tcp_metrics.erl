@@ -22,7 +22,7 @@ init(Parent) ->
     loop(create_port(), <<>>).
 
 
-%% lookup the estimated RTT in usecs for an IP.
+%% lookup the estimated RTT in millisecs for an IP.
 -spec lookup(ip() |
              {0..255,0..255,0..255,0..255} |
              binary())
