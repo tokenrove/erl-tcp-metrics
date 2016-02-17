@@ -59,7 +59,7 @@ priv_dir() ->
 -spec create_port() -> port().
 create_port() ->
     open_port({spawn, port_path("tcp_metrics_port")},
-              [in, binary, exit_status]).
+              [binary, exit_status]).
 
 
 -spec loop(port(), binary()) -> ok.

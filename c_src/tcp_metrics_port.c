@@ -21,6 +21,7 @@ static void update(uint32_t ip, uint32_t rtt)
     fwrite(&rtt, sizeof(rtt), 1, stdout);
 }
 
+
 static uint64_t age_threshold_ms = 0;
 
 static int handle_packet(struct nl_msg *msg, void *arg)
@@ -139,12 +140,12 @@ int main(int argc, char **argv)
     age_threshold_ms = 0;
 
     /* Erlang hooks stdin up to a tty, so don't try isatty() here.  We
-     * try non-blocking reads to see if Erlang has close our stdin
+     * try non-blocking reads to see if Erlang has closed our stdin
      * yet. */
     int fd = 0;
     if (fcntl(fd, F_SETFL, O_NONBLOCK | fcntl(fd, F_GETFL, 0)))
         return 1;
-    while (read(fd, (char[1]){0}, 1)) {
+    while ((rv = read(fd, (char[1]){0}, 1)) < 0) {
         int flags = NLM_F_DUMP;
         uint8_t cmd = TCP_METRICS_CMD_GET;
         genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, family, 0,
@@ -155,11 +156,13 @@ int main(int argc, char **argv)
             return 1;
 
         rv = nl_recvmsgs_default(sk);
+        if (rv)
+            return rv;
 
         fflush(stdout);
 
         sleep(interval);
         age_threshold_ms = (1+interval) * 1000;
     }
-    return 0;
+    return rv;
 }
