@@ -80,11 +80,9 @@ static int handle_packet(struct nl_msg *msg, void *arg)
      * that explains why. */
     unsigned long rtt = 0;
     struct nlattr *m;
-    if ((m = metrics[1+TCP_METRIC_RTT_US])) {
+    if ((m = metrics[1+TCP_METRIC_RTT]))
         rtt = nla_get_u32(m);
-    } else if ((m = metrics[1+TCP_METRIC_RTT])) {
-        rtt = nla_get_u32(m) * 1000;
-    } else
+    else
         return NL_SKIP;
 
     update(addr, rtt>>3);
