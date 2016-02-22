@@ -1,6 +1,6 @@
 {application, 'tcp_metrics',
  [{description, "Gather TCP RTT metrics"},
-  {vsn, "0.1.0"},
+  {vsn, "git"},
   {registered, []},
   {mod, {'tcp_metrics_app', []}},
   {applications,
