@@ -22,3 +22,10 @@ Usage
 Start the `tcp_metrics` application and call `tcp_metrics:lookup(Ip)`
 or read straight from the ETS table created; the returned value is
 either `undefined` or an integer in milliseconds.
+
+You can filter by source address by setting `source_address` in the
+application environment before the application is started; e.g.:
+
+```
+application:set_env(tcp_metrics, source_address, {127,0,0,1}).
+```

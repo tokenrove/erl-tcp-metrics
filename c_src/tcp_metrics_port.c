@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/ip.h>
 
@@ -22,6 +23,7 @@ static void update(uint32_t ip, uint32_t rtt)
 }
 
 
+static uint32_t source_address = 0;
 static uint64_t age_threshold_ms = 0;
 
 static int handle_packet(struct nl_msg *msg, void *arg)
@@ -34,17 +36,23 @@ static int handle_packet(struct nl_msg *msg, void *arg)
     if (rv)
         return NL_SKIP;
 
-    /* Right now, we only care about IPv4 addresses with RTT info. */
-    if (!attrs[TCP_METRICS_ATTR_ADDR_IPV4] || !attrs[TCP_METRICS_ATTR_VALS])
+    /* Right now, we only care about IPv4 addresses which match our
+     * source address, with RTT info. */
+    if (!attrs[TCP_METRICS_ATTR_ADDR_IPV4] ||
+        !attrs[TCP_METRICS_ATTR_VALS])
         return NL_SKIP;
 
-    struct nlattr *p = attrs[TCP_METRICS_ATTR_ADDR_IPV4];
+    struct nlattr *p = attrs[TCP_METRICS_ATTR_SADDR_IPV4];
+    if (source_address && p &&
+        (nla_len(p) != sizeof(source_address) ||
+         nla_get_u32(p) != source_address))
+            return NL_SKIP;
 
+    p = attrs[TCP_METRICS_ATTR_ADDR_IPV4];
     static uint32_t last_addr = 0;
-    uint32_t addr;
-    if (nla_len(p) != sizeof(addr))
+    if (nla_len(p) != sizeof(last_addr))
         return NL_SKIP;
-    addr = nla_get_u32(p);
+    uint32_t addr = nla_get_u32(p);
     /* If we already have a value for this address, we don't need
      * more.
      *
@@ -93,7 +101,7 @@ static int handle_packet(struct nl_msg *msg, void *arg)
 
 static void print_usage(const char *name)
 {
-    fprintf(stderr, "Usage:\n%s [interval]\n\n"
+    fprintf(stderr, "Usage:\n%s [interval] [source address]\n\n"
             "Note that interval is in whole seconds, and must be at least 1.\n",
             name);
 }
@@ -103,10 +111,16 @@ int main(int argc, char **argv)
 {
     int interval = 5;
 
-    if (argc > 2) {
+    if (argc > 3) {
         print_usage(argv[0]);
         return 1;
-    } else if (argc == 2)
+    }
+    if (argc > 2 &&
+        1 != inet_pton(AF_INET, argv[2], &source_address)) {
+        print_usage(argv[0]);
+        return 1;
+    }
+    if (argc > 1)
         interval = atoi(argv[1]);
 
     if (interval < 1) {
