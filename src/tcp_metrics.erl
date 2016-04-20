@@ -40,7 +40,10 @@ init(Parent) ->
              binary())
             -> rtt() | undefined.
 lookup(Ip) when is_integer(Ip) ->
-    case ets:lookup(?TABLE, Ip) of
+    case try ets:lookup(?TABLE, Ip)
+         catch error:badarg -> []
+         end
+    of
         [{_Ip, Rtt}] -> Rtt;
         [] -> undefined
     end;
